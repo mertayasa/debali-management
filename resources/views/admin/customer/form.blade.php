@@ -4,17 +4,17 @@
     <div class="row">
         <div class="col-lg-3">
             <label class="form-label">Name</label>
-            {{ html()->text('name')->class('form-control') }}
+            {{ html()->text('name')->class('form-control')->attribute('x-model', '$store.customer.data.name') }}
         </div>
         <div class="col-lg-3">
             <label class="form-label">Phone</label>
-            {{ html()->text('phone')->class('form-control') }}
+            {{ html()->text('phone')->class('form-control')->attribute('x-model', '$store.customer.data.phone') }}
         </div>
         <div class="col-lg-4">
             <label class="form-label">Desc</label>
-            {{ html()->text('desc')->class('form-control') }}
+            {{ html()->text('desc')->class('form-control')->attribute('x-model', '$store.customer.data.desc') }}
         </div>
-        <div class="col-auto mt-auto">
+        <div class="col-auto mt-auto">  
             {{ html()->button('Save')->class('btn btn-sm p-2 mt-auto btn-success')->id('submitFormBtn')->attribute('x-on:click', '$store.customer.store($event)') }}
             {{ html()->button('Clear')->class('btn btn-sm p-2 mt-auto btn-danger')->type('button')->attribute('x-on:click', '$store.customer.resetForm()') }}
         </div>
@@ -30,8 +30,19 @@
 
         document.addEventListener('alpine:init', () => {
             Alpine.store('customer', {
+                state: 'create',
+                data:{
+                    id:null,
+                    name: '',
+                    phone: '',
+                    desc: '' 
+                },
                 resetForm: function(){
                     form.reset()
+                    this.data.id = null
+                    this.data.name = ''
+                    this.data.phone = ''
+                    this.data.desc = ''
                 },
                 store: function(event){
                     event.preventDefault()
