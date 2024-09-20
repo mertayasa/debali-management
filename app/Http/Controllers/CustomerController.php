@@ -59,7 +59,7 @@ class CustomerController extends Controller
      */
     public function edit(Customer $customer)
     {
-        //
+        return response()->json($customer, 200);
     }
 
     /**
@@ -67,7 +67,14 @@ class CustomerController extends Controller
      */
     public function update(Request $request, Customer $customer)
     {
-        //
+        try{
+            $customer->update($request->all());
+        }catch(Exception $e){
+            Log::error($e->getMessage());
+            Log::error($e->getTraceAsString());
+            return response()->json(['message' => ''], 500);            
+        }
+        return response()->json(['message' => 'Data Updated']);
     }
 
     /**
@@ -80,6 +87,7 @@ class CustomerController extends Controller
         }catch(Exception $e){
             Log::error($e->getMessage());
             Log::error($e->getTraceAsString());
+            return response()->json(['message' => ''], 500);
         }
 
         return response()->json(['message' => 'Data deleted']);
