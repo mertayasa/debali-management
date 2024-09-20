@@ -5,8 +5,9 @@
             <span class="navbar-toggler-icon"></span>
           </button>
           <h1 class="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3">
-            <a href=".">
-              <img src=" {{ asset('static/logo.svg') }}" width="110" height="32" alt="Tabler" class="navbar-brand-image">
+            <a href="{{ route('admin.home.index') }}">
+              Debali Printing
+              {{-- <img src=" {{ asset('static/logo.svg') }}" width="110" height="32" alt="Tabler" class="navbar-brand-image"> --}}
             </a>
           </h1>
           <div class="navbar-nav flex-row order-md-last">
@@ -47,6 +48,27 @@
                   <a class="nav-link" href="{{ route('admin.customer.index') }}" >
                     <span class="nav-link-title">
                       Customer
+                    </span>
+                  </a>
+                </li>
+                <li class="nav-item {{ Request::is('*product*') ? 'active' : '' }}">
+                  <a class="nav-link" href="{{ route('admin.product.index') }}" >
+                    <span class="nav-link-title">
+                      Product
+                    </span>
+                  </a>
+                </li>
+                <li class="nav-item {{ Request::is('*expense*') ? 'active' : '' }}">
+                  <a class="nav-link" href="{{ route('admin.expense.index') }}" >
+                    <span class="nav-link-title">
+                      Expense
+                    </span>
+                  </a>
+                </li>
+                <li class="nav-item {{ Request::is('*sales*') ? 'active' : '' }}">
+                  <a class="nav-link" href="{{ route('admin.sales.index') }}" >
+                    <span class="nav-link-title">
+                      Sales
                     </span>
                   </a>
                 </li>

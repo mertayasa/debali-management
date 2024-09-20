@@ -2,20 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use App\DataTables\ProductDataTable;
-use App\Models\Product;
+use App\DataTables\SaleDataTable;
+use App\Models\Sale;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
-class ProductController extends Controller
+class SaleController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(ProductDataTable $productDataTable)
+    public function index(SaleDataTable $saleDataTable)
     {
-        return $productDataTable->render('admin.product.index');
+        return $saleDataTable->render('admin.sale.index');
     }
 
     function datatable() {
@@ -27,7 +27,7 @@ class ProductController extends Controller
      */
     public function create()
     {
-        return view('admin.product.create');
+        return view('admin.sale.create');
     }
 
     /**
@@ -36,7 +36,7 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         try{
-            Product::create($request->all());
+            Sale::create($request->all());
         }catch(Exception $e){
             Log::error($e->getMessage());
             Log::error($e->getTraceAsString());
@@ -49,7 +49,7 @@ class ProductController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Product $product)
+    public function show(Sale $sale)
     {
         //
     }
@@ -57,18 +57,18 @@ class ProductController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Product $product)
+    public function edit(Sale $sale)
     {
-        return response()->json($product, 200);
+        return response()->json($sale, 200);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Product $product)
+    public function update(Request $request, Sale $sale)
     {
         try{
-            $product->update($request->all());
+            $sale->update($request->all());
         }catch(Exception $e){
             Log::error($e->getMessage());
             Log::error($e->getTraceAsString());
@@ -80,10 +80,10 @@ class ProductController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Product $product)
+    public function destroy(Sale $sale)
     {
         try{
-            $product->delete();
+            $sale->delete();
         }catch(Exception $e){
             Log::error($e->getMessage());
             Log::error($e->getTraceAsString());
