@@ -49,13 +49,13 @@ Route::middleware(['auth'])->group(function () {
             Route::get('datatable', [ExpenseController::class, 'datatable'])->name('datatable');
         });
 
-        Route::group(['prefix' => 'sales', 'as' => 'sales.'], function () {
+        Route::group(['prefix' => 'sale', 'as' => 'sale.'], function () {
             Route::get('/', [SaleController::class, 'index'])->name('index');
             Route::get('create', [SaleController::class, 'create'])->name('create');
             Route::post('store', [SaleController::class, 'store'])->name('store');
-            Route::get('edit/{sales}', [SaleController::class, 'edit'])->name('edit');
-            Route::patch('update/{sales}', [SaleController::class, 'update'])->name('update');
-            Route::delete('destroy/{sales}', [SaleController::class, 'destroy'])->name('destroy');
+            Route::get('edit/{sale}', [SaleController::class, 'edit'])->name('edit');
+            Route::patch('update/{sale}', [SaleController::class, 'update'])->name('update');
+            Route::delete('destroy/{sale}', [SaleController::class, 'destroy'])->name('destroy');
             Route::get('datatable', [SaleController::class, 'datatable'])->name('datatable');
         });
     });
