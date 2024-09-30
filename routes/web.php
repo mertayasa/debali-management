@@ -26,6 +26,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('create', [CustomerController::class, 'create'])->name('create');
             Route::post('store', [CustomerController::class, 'store'])->name('store');
             Route::get('edit/{customer}', [CustomerController::class, 'edit'])->name('edit');
+            Route::get('show/{customer}', [CustomerController::class, 'show'])->name('show');
             Route::patch('update/{customer}', [CustomerController::class, 'update'])->name('update');
             Route::delete('destroy/{customer}', [CustomerController::class, 'destroy'])->name('destroy');
             Route::get('datatable', [CustomerController::class, 'datatable'])->name('datatable');

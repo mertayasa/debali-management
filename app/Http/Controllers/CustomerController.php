@@ -36,14 +36,14 @@ class CustomerController extends Controller
     public function store(Request $request)
     {
         try{
-            Customer::create($request->all());
+            $customer = Customer::create($request->all());
         }catch(Exception $e){
             Log::error($e->getMessage());
             Log::error($e->getTraceAsString());
             return response()->json(['message' => ''], 500);
         }
 
-        return response()->json(['message' => 'Data stored']);
+        return response()->json(['message' => 'Data stored', 'customer' => $customer]);
     }
 
     /**
@@ -51,7 +51,7 @@ class CustomerController extends Controller
      */
     public function show(Customer $customer)
     {
-        //
+        return response()->json($customer, 200);
     }
 
     /**

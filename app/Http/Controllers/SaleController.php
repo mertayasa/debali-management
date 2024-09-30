@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\DataTables\SaleDataTable;
+use App\Models\Customer;
 use App\Models\Sale;
 use Exception;
 use Illuminate\Http\Request;
@@ -27,7 +28,10 @@ class SaleController extends Controller
      */
     public function create()
     {
-        return view('admin.sale.create');
+        $customers = Customer::all('id', 'name');
+        return view('admin.sale.create', [
+            'customers' => $customers
+        ]);
     }
 
     /**
