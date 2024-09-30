@@ -37,6 +37,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('create', [ProductController::class, 'create'])->name('create');
             Route::post('store', [ProductController::class, 'store'])->name('store');
             Route::get('edit/{product}', [ProductController::class, 'edit'])->name('edit');
+            Route::get('show/{product}', [ProductController::class, 'show'])->name('show');
             Route::patch('update/{product}', [ProductController::class, 'update'])->name('update');
             Route::delete('destroy/{product}', [ProductController::class, 'destroy'])->name('destroy');
             Route::get('datatable', [ProductController::class, 'datatable'])->name('datatable');

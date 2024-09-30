@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\DataTables\SaleDataTable;
 use App\Models\Customer;
+use App\Models\Product;
 use App\Models\Sale;
 use Exception;
 use Illuminate\Http\Request;
@@ -29,8 +30,11 @@ class SaleController extends Controller
     public function create()
     {
         $customers = Customer::all('id', 'name');
+        $products = Product::all('id', 'name');
+        // dd($products);
         return view('admin.sale.create', [
-            'customers' => $customers
+            'customers' => $customers,
+            'products' => $products,
         ]);
     }
 

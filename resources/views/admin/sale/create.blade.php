@@ -25,8 +25,8 @@
         <div class="container-xl">
             <div class="card">
                 <div class="card-body">
-                    <div class="row">
-                        <div class="col-12 col-md-6">
+                    <div class="row align-items-center">
+                        <div class="col">
                             <div class="row g-2">
                                 {{ html()->hidden('id')->id('custIdForm') }}
                                 <div class="col">
@@ -45,20 +45,53 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="col-3">
+                            Customer : <span x-text="$store.customer.customer.name"></span>
+                        </div>
+                        <div class="col-3">
+                            Phone : <span x-text="$store.customer.customer.phone"></span>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="card mt-2">
+            <div class="card mt-2" x-show="$store.customer.customerDefined == false">
                 <div class="card-body">
-                    <div class="row align-items-start">
-                        <div class="col">
-                            Customer : <span x-text="$store.customer.customer.name"></span>
-                        </div>
-                        <div class="col">
-                            Phone : <span x-text="$store.customer.customer.phone"></span>
-                        </div>
+                    <div class="col-12 text-end">
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalSale">Add Item</button>
                     </div>
+                    <table class="table">
+                        <tr>
+                            <th>Item</th>
+                            <th class="text-end">Price</th>
+                            <th class="text-end">QTY</th>
+                            <th class="text-end">Discount</th>
+                            <th class="text-end">Amount</th>
+                        </tr>
+                        <tr>
+                            <td>Anjay</td>
+                            <td class="text-end">70000</td>
+                            <td class="text-end">2</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">140000</td>
+                        </tr>
+                        <tr>
+                            <td colspan="4" class="text-end" style="border: none"><b>Subtotal</b></td>
+                            <td class="text-end">140000</td>
+                        </tr>
+                        <tr>
+                            <td colspan="4" class="text-end" style="border: none"><b>Discount</b></td>
+                            <td class="text-end">140000</td>
+                        </tr>
+                        <tr>
+                            <td colspan="4" class="text-end" style="border: none"><b>DP</b></td>
+                            <td class="text-end">140000</td>
+                        </tr>
+                        <tr>
+                            <td colspan="4" class="text-end" style="border: none"><b>Total</b></td>
+                            <td class="text-end">140000</td>
+                        </tr>
+                    </table>
                 </div>
             </div>
 
@@ -97,6 +130,48 @@
                     </div>
                 </div>
             </div>
+            <div class="modal modal-xl modal-blur fade" id="modalSale" tabindex="-1" role="dialog" aria-hidden="true">
+                <div class="modal-dialog modal-xl" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">New Item</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-lg-3">
+                                    <label class="form-label">Product</label>
+                                    <select name="id_product" class="form-control" id="selectProduct">
+                                        <option value=""></option>
+                                        @foreach ($products as $product)
+                                            <option value="{{ $product->id }}">{{ $product->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-lg-3">
+                                    <label class="form-label">Price</label>
+                                    {{ html()->text('price')->disabled()->id('priceForm')->class('form-control')->attribute('x-model', '$store.sale.product.price') }}
+                                </div>
+                                <div class="col-lg-3">
+                                    <label class="form-label">QTY</label>
+                                    {{ html()->number('qty')->id('qtyForm')->class('form-control') }}
+                                </div>
+                                <div class="col-lg-3">
+                                    <label class="form-label">Discount</label>
+                                    {{ html()->number('discount')->id('discountForm')->class('form-control') }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <a href="#" class="btn btn-link link-secondary" id="closeModalLink"
+                                data-bs-dismiss="modal">
+                                Cancel
+                            </a>
+                            {{ html()->button('Submit')->class('btn btn-sm p-2 mt-auto ms-auto btn-success')->id('submitItemFormBtn')->attribute('x-on:click', '$store.sale.submitItem($event)') }}
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 @endsection
@@ -112,6 +187,7 @@
         document.addEventListener('alpine:init', () => {
             Alpine.store('customer', {
                 state: STATECREATE,
+                customerDefined : false,
                 customer: {
                     id: '',
                     name: '',
@@ -149,7 +225,7 @@
                                 this.customer.phone = data.phone
                                 this.customer.desc = data.desc
 
-                                console.log(this.customer);
+                                this.customerDefined = true
                             })
 
                         return
@@ -209,6 +285,49 @@
     {{-- End script for customer related --}}
 
     <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.store('sale', {
+                items: {},
+                product: {
+                    id: '',
+                    name: '',
+                    price: '',
+                },
+                init: function() {
+                    $('#selectProduct').select2({
+                        theme: 'bootstrap-5',
+                        placeholder: "Select product",
+                        dropdownParent: $("#modalSale")
+                    })
 
+                    $("#selectProduct").on("change", function() {
+                        Alpine.store('sale').fetchProduct($(this).val())
+                    })
+                },
+                fetchProduct: function(id) {
+                    if (id) {
+                        fetch("{{ url('admin/product/show') }}" + '/' + id)
+                            .then(function(response) {
+                                const data = response.json()
+                                return data
+                            })
+                            .then(data => {
+                                this.product.id = data.id
+                                this.product.name = data.name
+                                this.product.price = data.price
+
+                                console.log(data);
+                                
+                            })
+
+                        return
+                    }
+
+                    this.product.id = ''
+                    this.product.name = ''
+                    this.product.price = ''
+                },
+            })
+        })
     </script>
 @endpush
