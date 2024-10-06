@@ -77,19 +77,19 @@
                         </tr>
                         <tr>
                             <td colspan="4" class="text-end" style="border: none"><b>Subtotal</b></td>
-                            <td class="text-end">140000</td>
+                            <td class="text-end" x-text="$store.sale.summary.subtotal"></td>
                         </tr>
                         <tr>
-                            <td colspan="4" class="text-end" style="border: none"><b>Discount</b></td>
-                            <td class="text-end">140000</td>
+                            <td colspan="4" class="text-end" style="border: none"><b>Total Discount</b></td>
+                            <td class="text-end" x-text="$store.sale.summary.totalDiscount"></td>
                         </tr>
                         <tr>
-                            <td colspan="4" class="text-end" style="border: none"><b>DP</b></td>
-                            <td class="text-end">140000</td>
+                            <td colspan="4" class="text-end align-middle" style="border: none"><b>DP</b></td>
+                            <td class="text-end" width="300"> {{ html()->number('dp')->class('form-control')->attribute('x-model', '$store.sale.summary.dp')->attribute('x-on:input', '$store.sale.inputDp($event)') }} </td>
                         </tr>
                         <tr>
                             <td colspan="4" class="text-end" style="border: none"><b>Total</b></td>
-                            <td class="text-end">140000</td>
+                            <td class="text-end" x-text="$store.sale.summary.total"></td>
                         </tr>
                     </table>
                 </div>
@@ -141,7 +141,7 @@
                             <div class="row">
                                 <div class="col-lg-3">
                                     <label class="form-label">Product</label>
-                                    <select name="id_product" class="form-control" id="selectProduct">
+                                    <select name="id_product" class="form-control" id="productIdForm">
                                         <option value=""></option>
                                         @foreach ($products as $product)
                                             <option value="{{ $product->id }}">{{ $product->name }}</option>
@@ -287,22 +287,40 @@
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.store('sale', {
-                items: {},
+                items: [],
+                summary : {
+                    subtotal: 0,
+                    totalDiscount: 0,
+                    total: 0,
+                    dp: 0
+                },
                 product: {
                     id: '',
                     name: '',
                     price: '',
                 },
                 init: function() {
-                    $('#selectProduct').select2({
+                    $('#productIdForm').select2({
                         theme: 'bootstrap-5',
                         placeholder: "Select product",
                         dropdownParent: $("#modalSale")
                     })
 
-                    $("#selectProduct").on("change", function() {
+                    $("#productIdForm").on("change", function() {
                         Alpine.store('sale').fetchProduct($(this).val())
                     })
+                },
+                clear: function(){
+                    this.product = {
+                        id: '',
+                        name: '',
+                        price: '',
+                    }
+
+                    $("#productIdForm").val('').trigger('change')
+                    let priceForm = document.getElementById('priceForm').value = ''
+                    let qtyForm = document.getElementById('qtyForm').value = ''
+                    let discountForm = document.getElementById('discountForm').value = ''
                 },
                 fetchProduct: function(id) {
                     if (id) {
@@ -327,6 +345,48 @@
                     this.product.name = ''
                     this.product.price = ''
                 },
+                inputDp: function(event){
+                    console.log('asdsds');
+                    // console.log(event.target.value);
+                    
+                    event.target.value = event.target.value.replace(/^0/, "")
+                },
+                submitItem: function (event){
+                    let priceForm = document.getElementById('priceForm')
+                    let qtyForm = document.getElementById('qtyForm')
+                    let discountForm = document.getElementById('discountForm')
+
+                    let itemToAdd = {
+                        productId: this.product.id,
+                        price: priceForm.value,
+                        qty: qtyForm.value,
+                        discount: discountForm.value,
+                        amount: (priceForm.value * qtyForm.value) - discountForm.value
+                    }
+
+                    this.items.push(itemToAdd)
+                    this.clear()
+                    this.countSummary()
+                },
+                countSummary: function(){
+                    // count subtotal
+                    let subtotal = 0
+                    for (let index = 0; index < this.items.length; index++) {
+                        const element = this.items[index]
+                        subtotal = parseInt(subtotal + element.amount)
+                    }
+
+                    // count discount
+                    let totalDiscount = 0
+                    for (let index = 0; index < this.items.length; index++) {
+                        const element = this.items[index]
+                        totalDiscount = parseInt(totalDiscount + element.discount)
+                    }
+
+                    this.summary.subtotal = subtotal
+                    this.summary.totalDiscount = totalDiscount
+                    this.summary.total = parseInt(this.summary.subtotal - this.summary.dp)
+                }
             })
         })
     </script>
