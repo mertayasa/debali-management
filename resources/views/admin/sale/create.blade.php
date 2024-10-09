@@ -55,7 +55,7 @@
                 </div>
             </div>
 
-            <div class="card mt-2" x-show="$store.customer.customerDefined == false">
+            <div class="card mt-2" x-show="$store.customer.customerDefined == true">
                 <div class="card-body">
                     <div class="col-12 text-end">
                         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalSale">Add Item</button>
@@ -68,30 +68,40 @@
                             <th class="text-end">Discount</th>
                             <th class="text-end">Amount</th>
                         </tr>
-                        <tr>
-                            <td>Anjay</td>
-                            <td class="text-end">70000</td>
-                            <td class="text-end">2</td>
-                            <td class="text-end">0</td>
-                            <td class="text-end">140000</td>
-                        </tr>
+                        <template x-for="item in $store.sale.items">
+                            <tr>
+                                <td x-text="item.name"></td>
+                                <td class="text-end" x-text="$store.sale.formatNumber(item.price)"></td>
+                                <td class="text-end" x-text="item.qty"></td>
+                                <td class="text-end" x-text="$store.sale.formatNumber(item.discount)"></td>
+                                <td class="text-end" x-text="$store.sale.formatNumber(item.amount)"></td>
+                            </tr>
+                        </template>
                         <tr>
                             <td colspan="4" class="text-end" style="border: none"><b>Subtotal</b></td>
-                            <td class="text-end" x-text="$store.sale.summary.subtotal"></td>
+                            <td class="text-end" x-text="$store.sale.formatNumber($store.sale.summary.subtotal)"></td>
                         </tr>
                         <tr>
                             <td colspan="4" class="text-end" style="border: none"><b>Total Discount</b></td>
-                            <td class="text-end" x-text="$store.sale.summary.totalDiscount"></td>
+                            <td class="text-end" x-text="$store.sale.formatNumber($store.sale.summary.totalDiscount)"></td>
                         </tr>
                         <tr>
                             <td colspan="4" class="text-end align-middle" style="border: none"><b>DP</b></td>
-                            <td class="text-end" width="300"> {{ html()->number('dp')->class('form-control')->attribute('x-model', '$store.sale.summary.dp')->attribute('x-on:input', '$store.sale.inputDp($event)') }} </td>
+                            <td class="text-end" width="300"> {{ html()->number('dp')->class('form-control')->attribute('x-model', '$store.sale.summary.dp')->attribute('x-on:input', '$store.sale.removeLeadZero($event)') }} </td>
                         </tr>
                         <tr>
-                            <td colspan="4" class="text-end" style="border: none"><b>Total</b></td>
-                            <td class="text-end" x-text="$store.sale.summary.total"></td>
+                            <td colspan="4" class="text-end align-middle" style="border: none"><b>Shipping</b></td>
+                            <td class="text-end" width="300"> {{ html()->number('ship_cost')->class('form-control')->attribute('x-model', '$store.sale.summary.ship_cost')->attribute('x-on:input', '$store.sale.removeLeadZero($event)') }} </td>
+                        </tr>
+                        <tr>
+                            <td colspan="4" class="text-end" style="border: none"><b>Remain</b></td>
+                            <td class="text-end" x-text="$store.sale.formatNumber($store.sale.summary.remain)"></td>
                         </tr>
                     </table>
+
+                    <div class="text-end">
+                        <button class="btn btn-primary" id="btnSavePurchase" x-on:click="$store.sale.savePurchase()">Save Purchase</button>
+                    </div>
                 </div>
             </div>
 
@@ -163,7 +173,7 @@
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <a href="#" class="btn btn-link link-secondary" id="closeModalLink"
+                            <a href="#" class="btn btn-link link-secondary" id="closeModalProduct"
                                 data-bs-dismiss="modal">
                                 Cancel
                             </a>
@@ -291,7 +301,8 @@
                 summary : {
                     subtotal: 0,
                     totalDiscount: 0,
-                    total: 0,
+                    remain: 0,
+                    ship_cost: 0,
                     dp: 0
                 },
                 product: {
@@ -345,11 +356,15 @@
                     this.product.name = ''
                     this.product.price = ''
                 },
-                inputDp: function(event){
-                    console.log('asdsds');
-                    // console.log(event.target.value);
-                    
+                formatNumber: function(number){
+                    return new Intl.NumberFormat("id-ID", {
+                        style: "currency",
+                        currency: "IDR"
+                    }).format(number)
+                },
+                removeLeadZero: function(event){                    
                     event.target.value = event.target.value.replace(/^0/, "")
+                    this.countSummary()
                 },
                 submitItem: function (event){
                     let priceForm = document.getElementById('priceForm')
@@ -358,6 +373,7 @@
 
                     let itemToAdd = {
                         productId: this.product.id,
+                        name: this.product.name,
                         price: priceForm.value,
                         qty: qtyForm.value,
                         discount: discountForm.value,
@@ -367,6 +383,7 @@
                     this.items.push(itemToAdd)
                     this.clear()
                     this.countSummary()
+                    document.getElementById('closeModalProduct').click()
                 },
                 countSummary: function(){
                     // count subtotal
@@ -385,7 +402,56 @@
 
                     this.summary.subtotal = subtotal
                     this.summary.totalDiscount = totalDiscount
-                    this.summary.total = parseInt(this.summary.subtotal - this.summary.dp)
+                    this.summary.remain = parseInt(this.summary.subtotal - this.summary.dp) + parseInt(this.summary.ship_cost)
+                },
+                savePurchase: function(){
+                    clearFlash()
+                    const btnSavePurchase = document.getElementById('btnSavePurchase')
+                    btnSavePurchase.disabled = true
+                    btnSavePurchase.innerHTML = 'Processing...'
+
+                    let formData = {
+                        customer_id: Alpine.store('customer').customer.id,
+                        dp: this.summary.dp,
+                        ship_cost: this.summary.ship_cost, 
+                        items: this.items
+                    }
+
+                    console.log(formData);
+
+                    return
+
+                    fetch(form.getAttribute('action'), {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                        },
+                        method: 'POST',
+                        body: formData,
+                    })
+                    .then(function(response) {
+                        const data = response.json()
+                        btnSavePurchase.innerHTML = 'Save Purchase'
+                        btnSavePurchase.disabled = false
+
+                        if (response.status != 200) {
+                            data.then((res) => {
+                                const message = res.message
+                                Alpine.store('global').showFlash(res.message, 'error')
+                            })
+                            throw new Error()
+                        }
+
+                        return data
+                    })
+                    .then(data => {
+                        this.resetForm()
+                        Alpine.store('global').showFlash(data.message, 'success')
+                    })
+                    .catch((error) => {
+                        Alpine.store('global').showFlash('Terjadi kesalahan pada sistem', 'error')
+                        return
+                    })
                 }
             })
         })

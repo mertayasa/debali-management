@@ -53,8 +53,6 @@
                     this.state == STATECREATE ? this.store(event) : this.update(event)
                 },
                 store: function(event){
-                    console.log('store');
-                    
                     event.preventDefault()
                     let formData = new FormData(form)
                     clearFlash()
