@@ -26,8 +26,11 @@ class SaleDataTable extends DataTable
             ->editColumn('customer_id', function() use($query){
                 return $query->get()[0]->customer->name;
             })
-            ->editColumn('actor_id', function() use($query){
-                return $query->get()[0]->actor->name;
+            ->editColumn('dp', function() use($query){
+                return currency($query->get()[0]->dp);
+            })
+            ->editColumn('ship_cost', function() use($query){
+                return currency($query->get()[0]->ship_cost);
             })
             ->addColumn('action', 'admin.sale.datatable_action')
             ->setRowId('id');
@@ -67,7 +70,6 @@ class SaleDataTable extends DataTable
             Column::make('status'),
             Column::make('dp'),
             Column::make('ship_cost'),
-            Column::make('actor_id'),
         ];
     }
 
