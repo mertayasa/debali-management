@@ -77,6 +77,7 @@ class SaleController extends Controller
      */
     public function show(Sale $sale)
     {
+        // dd($sale->subtotal);
         return view('admin.sale.show', [
             'sale' => $sale
         ]);

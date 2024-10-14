@@ -17,6 +17,14 @@ class Sale extends Model
         'actor_id',
     ];
 
+    function getSubtotalAttribute() {
+        return $this->sale_products->sum('amount');
+    }
+
+    function getRemainAttribute() {
+        return ($this->sale_products->sum('amount') - $this->dp) + $this->ship_cost;
+    }
+
     public function customer()
     {
         return $this->belongsTo(Customer::class, 'customer_id');

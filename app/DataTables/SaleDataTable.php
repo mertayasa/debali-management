@@ -4,6 +4,7 @@ namespace App\DataTables;
 
 use App\Models\Sale;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
+use Illuminate\Support\Facades\Log;
 use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
 use Yajra\DataTables\Html\Button;
@@ -22,6 +23,12 @@ class SaleDataTable extends DataTable
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
+            ->editColumn('customer_id', function() use($query){
+                return $query->get()[0]->customer->name;
+            })
+            ->editColumn('actor_id', function() use($query){
+                return $query->get()[0]->actor->name;
+            })
             ->addColumn('action', 'admin.sale.datatable_action')
             ->setRowId('id');
     }
@@ -31,7 +38,7 @@ class SaleDataTable extends DataTable
      */
     public function query(Sale $model): QueryBuilder
     {
-        return $model->newQuery();
+        return $model->newQuery()->with('customer', 'actor');
     }
 
     /**
