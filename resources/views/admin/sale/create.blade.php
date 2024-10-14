@@ -82,10 +82,6 @@
                             <td class="text-end" x-text="$store.sale.formatNumber($store.sale.summary.subtotal)"></td>
                         </tr>
                         <tr>
-                            <td colspan="4" class="text-end" style="border: none"><b>Total Discount</b></td>
-                            <td class="text-end" x-text="$store.sale.formatNumber($store.sale.summary.totalDiscount)"></td>
-                        </tr>
-                        <tr>
                             <td colspan="4" class="text-end align-middle" style="border: none"><b>DP</b></td>
                             <td class="text-end" width="300"> {{ html()->number('dp')->class('form-control')->attribute('x-model', '$store.sale.summary.dp')->attribute('x-on:input', '$store.sale.removeLeadZero($event)') }} </td>
                         </tr>
@@ -300,7 +296,6 @@
                 items: [],
                 summary : {
                     subtotal: 0,
-                    totalDiscount: 0,
                     remain: 0,
                     ship_cost: 0,
                     dp: 0
@@ -343,10 +338,7 @@
                             .then(data => {
                                 this.product.id = data.id
                                 this.product.name = data.name
-                                this.product.price = data.price
-
-                                console.log(data);
-                                
+                                this.product.price = data.price                                
                             })
 
                         return
@@ -372,11 +364,11 @@
                     let discountForm = document.getElementById('discountForm')
 
                     let itemToAdd = {
-                        productId: this.product.id,
+                        product_id: this.product.id,
                         name: this.product.name,
-                        price: priceForm.value,
-                        qty: qtyForm.value,
-                        discount: discountForm.value,
+                        price: parseInt(priceForm.value),
+                        qty: parseInt(qtyForm.value),
+                        discount: parseInt(discountForm.value || 0),
                         amount: (priceForm.value * qtyForm.value) - discountForm.value
                     }
 
@@ -386,22 +378,13 @@
                     document.getElementById('closeModalProduct').click()
                 },
                 countSummary: function(){
-                    // count subtotal
                     let subtotal = 0
                     for (let index = 0; index < this.items.length; index++) {
                         const element = this.items[index]
                         subtotal = parseInt(subtotal + element.amount)
                     }
 
-                    // count discount
-                    let totalDiscount = 0
-                    for (let index = 0; index < this.items.length; index++) {
-                        const element = this.items[index]
-                        totalDiscount = parseInt(totalDiscount + element.discount)
-                    }
-
                     this.summary.subtotal = subtotal
-                    this.summary.totalDiscount = totalDiscount
                     this.summary.remain = parseInt(this.summary.subtotal - this.summary.dp) + parseInt(this.summary.ship_cost)
                 },
                 savePurchase: function(){
@@ -410,24 +393,22 @@
                     btnSavePurchase.disabled = true
                     btnSavePurchase.innerHTML = 'Processing...'
 
-                    let formData = {
+                    let dataToPost = {
                         customer_id: Alpine.store('customer').customer.id,
                         dp: this.summary.dp,
                         ship_cost: this.summary.ship_cost, 
+                        remain: this.summary.remain, 
                         items: this.items
                     }
 
-                    console.log(formData);
-
-                    return
-
-                    fetch(form.getAttribute('action'), {
+                    fetch("{{ url('admin/sale/store') }}", {
                         headers: {
                             'X-Requested-With': 'XMLHttpRequest',
+                            'Content-Type': 'application/json',
                             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
                         },
                         method: 'POST',
-                        body: formData,
+                        body: JSON.stringify(dataToPost),
                     })
                     .then(function(response) {
                         const data = response.json()
@@ -445,8 +426,7 @@
                         return data
                     })
                     .then(data => {
-                        this.resetForm()
-                        Alpine.store('global').showFlash(data.message, 'success')
+                        return window.location.href = data.redirect_url
                     })
                     .catch((error) => {
                         Alpine.store('global').showFlash('Terjadi kesalahan pada sistem', 'error')

@@ -56,6 +56,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('create', [SaleController::class, 'create'])->name('create');
             Route::post('store', [SaleController::class, 'store'])->name('store');
             Route::get('edit/{sale}', [SaleController::class, 'edit'])->name('edit');
+            Route::get('show/{sale}', [SaleController::class, 'show'])->name('show');
             Route::patch('update/{sale}', [SaleController::class, 'update'])->name('update');
             Route::delete('destroy/{sale}', [SaleController::class, 'destroy'])->name('destroy');
             Route::get('datatable', [SaleController::class, 'datatable'])->name('datatable');

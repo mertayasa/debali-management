@@ -13,6 +13,7 @@ class SaleProduct extends Model
         'sale_id',
         'product_id',
         'price',
+        'qty',
         'discount',
         'amount',
     ];

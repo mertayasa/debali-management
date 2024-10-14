@@ -8,7 +8,11 @@ use App\Models\Product;
 use App\Models\Sale;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+
+use function Illuminate\Log\log;
 
 class SaleController extends Controller
 {
@@ -44,14 +48,28 @@ class SaleController extends Controller
     public function store(Request $request)
     {
         try{
-            Sale::create($request->all());
+            $sale = DB::transaction(function() use($request) {
+                $sale = Sale::create([
+                    'customer_id' => $request->customer_id,
+                    'status' => $request->remain == 0 ? 'paid' : 'unpaid',
+                    'dp' => $request->dp ?? 0,
+                    'ship_cost' => $request->ship_cost,
+                    'actor_id' => Auth::id(),
+                ]);
+    
+                foreach ($request->items as $key => $item) {
+                    $sale->sale_products()->create($item);
+                }
+
+                return $sale;
+            });
         }catch(Exception $e){
             Log::error($e->getMessage());
             Log::error($e->getTraceAsString());
             return response()->json(['message' => ''], 500);
         }
 
-        return response()->json(['message' => 'Data stored']);
+        return response()->json(['message' => 'Data stored', 'redirect_url' => route('admin.sale.show', $sale->id)]);
     }
 
     /**
@@ -59,7 +77,9 @@ class SaleController extends Controller
      */
     public function show(Sale $sale)
     {
-        //
+        return view('admin.sale.show', [
+            'sale' => $sale
+        ]);
     }
 
     /**

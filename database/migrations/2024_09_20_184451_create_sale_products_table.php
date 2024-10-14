@@ -16,7 +16,8 @@ return new class extends Migration
             $table->unsignedBigInteger('sale_id');
             $table->unsignedBigInteger('product_id');
             $table->bigInteger('price');
-            $table->bigInteger('discount');
+            $table->bigInteger('qty');
+            $table->bigInteger('discount')->default(0);
             $table->bigInteger('amount');
             $table->timestamps();
 
