@@ -32,6 +32,9 @@ class SaleDataTable extends DataTable
             ->editColumn('ship_cost', function() use($query){
                 return currency($query->get()[0]->ship_cost);
             })
+            ->addColumn('total', function() use($query){
+                return currency($query->get()[0]->subtotal); 
+            })
             ->addColumn('action', 'admin.sale.datatable_action')
             ->setRowId('id');
     }
@@ -70,6 +73,7 @@ class SaleDataTable extends DataTable
             Column::make('status'),
             Column::make('dp'),
             Column::make('ship_cost'),
+            Column::make('total'),
         ];
     }
 
